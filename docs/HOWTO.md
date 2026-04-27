@@ -7,16 +7,18 @@ Manual práctico para instalar, operar y desinstalar el MVP en un tótem Windows
 - PC Windows 10 u 11 con permisos de administrador.
 - Acceso a internet (para descargar Python, ngrok y el código).
 - Una cuenta gratuita en [ngrok.com](https://dashboard.ngrok.com/signup) — copiar el [auth token](https://dashboard.ngrok.com/get-started/your-authtoken).
-- El repositorio público del MVP ya pusheado a tu GitHub (ej. `https://github.com/<tu-usuario>/rdx-totem-mvp`).
+- El repositorio público del MVP ya pusheado a tu GitHub (ej. `https://github.com/zienbastian33/rdx-totem-mvp`).
 
 ## 1. Primera instalación
 
 Conéctate a la PC vía AnyDesk y abre **PowerShell como administrador** (clic derecho → "Ejecutar como administrador").
 
 ```powershell
-iwr https://raw.githubusercontent.com/<tu-usuario>/rdx-totem-mvp/main/ops/install.ps1 -OutFile install.ps1
-.\install.ps1 -GithubUser <tu-usuario>
+iwr https://raw.githubusercontent.com/zienbastian33/rdx-totem-mvp/main/ops/install.ps1 -OutFile install.ps1
+.\install.ps1
 ```
+
+`-GithubUser` ya viene con default `zienbastian33`. Pásalo solo si forkeas el repo a otra cuenta.
 
 El script:
 
@@ -44,8 +46,7 @@ Esa **URL pública** es la que abres desde tu laptop para ver el panel.
 
 ```powershell
 .\install.ps1 `
-    -GithubUser tu-usuario `
-    -KioskUrl https://app.rdx.center `
+    -KioskUrl https://otra-url.com `
     -InstallDir "C:\rdx-totem-mvp" `
     -NgrokAuthToken "2abc..."
 ```
@@ -79,29 +80,59 @@ Desde la URL pública ngrok ves el panel:
 - `/` — grilla de tótems con thumbnail de la última captura.
 - `/totems/<public_id>` — detalle del tótem con captura grande, últimas 24 h e histórico diario.
 
-## 4. Cambiar la URL del kiosko
+## 4. Cambiar configuración
 
-Editar `C:\rdx-totem-mvp\.env`:
-
-```env
-KIOSK_URL=https://otra-url.com
-```
-
-Reiniciar el servicio:
+Toda la config vive en `C:\rdx-totem-mvp\.env`. Tras editar, reiniciar el servicio:
 
 ```powershell
 Stop-ScheduledTask -TaskName RDxTotem
 Start-ScheduledTask -TaskName RDxTotem
 ```
 
+### 4.1 URL del kiosko
+
+```env
+KIOSK_URL=https://otra-url.com
+```
+
 El servicio mata el Chrome existente y lanza uno nuevo apuntando a la nueva URL.
+
+### 4.2 Qué monitor capturar (multi-monitor)
+
+```env
+SCREENSHOT_MONITOR=primary    # default — sólo el monitor principal donde abre Chrome
+SCREENSHOT_MONITOR=all        # los dos (o N) monitores combinados en una imagen panorámica
+SCREENSHOT_MONITOR=1          # primario explícito (igual que primary)
+SCREENSHOT_MONITOR=2          # secundario
+```
+
+Notas:
+
+- `mss.monitors[0]` es la unión de todos; `mss.monitors[1]` es el primario, `[2]` el secundario, etc.
+- Chrome `--kiosk` siempre abre fullscreen en el primario (es la convención de Windows). Si querés el kiosko en el secundario, hay que añadir `--window-position=X,Y` con coordenadas del segundo monitor; queda como mejora futura.
+- Si configuras `SCREENSHOT_MONITOR=2` pero la PC sólo tiene 1 monitor, cae a `primary` con un warning en logs.
+
+### 4.3 Frecuencia de captura
+
+```env
+SCREENSHOT_INTERVAL_SECONDS=600    # 10 min (default)
+SCREENSHOT_INTERVAL_SECONDS=300    # 5 min
+```
+
+### 4.4 Retención
+
+```env
+RETENTION_HOURS_FULL=24            # ventana móvil de detalle (default 24h)
+KEEP_DAILY_ARCHIVE=true            # conservar 1 por día como archivo permanente
+```
 
 ## 5. Actualizar a una nueva versión
 
 Tras pushear cambios al repo:
 
 ```powershell
-.\ops\install.ps1 -GithubUser <tu-usuario>
+cd C:\rdx-totem-mvp
+.\ops\install.ps1
 ```
 
 El script preserva `data/`, `.env` y `.venv` y solo reemplaza el código. Al final reinicia el servicio.
@@ -110,7 +141,7 @@ Si quieres reinstalar dependencias también:
 
 ```powershell
 Remove-Item C:\rdx-totem-mvp\.venv -Recurse -Force
-.\ops\install.ps1 -GithubUser <tu-usuario>
+.\ops\install.ps1
 ```
 
 ## 6. Desinstalar
@@ -178,5 +209,5 @@ Get-ScheduledTaskInfo -TaskName RDxTotem
 - **1 solo tótem** por instalación. La estructura permite N pero el panel todavía está pensado para 1.
 - **ngrok free** rota la URL pública en cada reinicio.
 - **Sin auth en el panel** — la única protección es que la URL ngrok es difícil de adivinar.
-- **Solo monitor primario** — multi-monitor pendiente.
+- **Multi-monitor** soportado en captura (`SCREENSHOT_MONITOR` en `.env`), pero Chrome kiosko siempre abre en el primario.
 - **Auto-resume tras corte de luz** depende de AutoLogon configurado (paso 2).

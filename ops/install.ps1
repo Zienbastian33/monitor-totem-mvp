@@ -44,11 +44,11 @@
 #Requires -RunAsAdministrator
 [CmdletBinding()]
 param(
-    [string]$GithubUser = "<USUARIO_GITHUB>",
+    [string]$GithubUser = "zienbastian33",
     [string]$RepoName = "rdx-totem-mvp",
     [string]$Branch = "main",
     [string]$InstallDir = "C:\rdx-totem-mvp",
-    [string]$KioskUrl = "https://app.rdx.center",
+    [string]$KioskUrl = "https://app.rdx.social",
     [string]$NgrokAuthToken = ""
 )
 
@@ -74,13 +74,6 @@ Write-Host "  RDx Totem MVP -- Instalacion Windows"          -ForegroundColor Cy
 Write-Host "===============================================" -ForegroundColor Cyan
 
 # --- Validaciones ---
-if ($GithubUser -eq "<USUARIO_GITHUB>") {
-    Write-Host ""
-    Write-Host "ERROR: Debes pasar -GithubUser <tu-usuario-de-github>" -ForegroundColor Red
-    Write-Host "Ejemplo: .\install.ps1 -GithubUser bastian" -ForegroundColor Red
-    exit 1
-}
-
 $RepoUrl = "https://github.com/$GithubUser/$RepoName"
 $ZipUrl  = "$RepoUrl/archive/refs/heads/$Branch.zip"
 

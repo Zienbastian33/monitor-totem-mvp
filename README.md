@@ -4,9 +4,9 @@ Pequeña plataforma para tótems físicos Windows que muestran sitios web en kio
 
 ## Qué hace
 
-- Abre Chrome en pantalla completa apuntando a una URL configurable (por defecto `app.rdx.center`).
+- Abre Chrome en pantalla completa apuntando a una URL configurable (por defecto `app.rdx.social`).
 - Si Chrome se cae, lo relanza solo (watchdog).
-- Toma screenshot del escritorio cada 10 minutos.
+- Toma screenshot del escritorio cada 10 minutos (monitor primario por defecto, configurable a `all` o un índice específico).
 - Sirve un panel web para supervisar el tótem desde otra computadora vía ngrok.
 - Se inicia automáticamente al boot de Windows.
 
@@ -19,7 +19,7 @@ Python 3.12 · FastAPI · SQLite · Jinja2 · mss · psutil · APScheduler · ng
 Desde PowerShell **como administrador** en la PC tótem:
 
 ```powershell
-iwr https://raw.githubusercontent.com/<TU_USUARIO_GITHUB>/rdx-totem-mvp/main/ops/install.ps1 -OutFile install.ps1; .\install.ps1
+iwr https://raw.githubusercontent.com/zienbastian33/rdx-totem-mvp/main/ops/install.ps1 -OutFile install.ps1; .\install.ps1
 ```
 
 El script:
@@ -85,7 +85,7 @@ rdx-totem-mvp/
 - Diseñado para 1 tótem. La estructura permite N pero el panel todavía no orquesta múltiples.
 - ngrok free: la URL pública cambia cada vez que reinicia ngrok (a menos que pagues plan fijo).
 - Sin auth: cualquiera con la URL ngrok ve el panel. Mitigación: URL aleatoria es difícil de adivinar; no expongas datos sensibles en el panel.
-- Solo monitor primario (multi-monitor: futura mejora).
+- Multi-monitor soportado vía `SCREENSHOT_MONITOR` (`primary` | `all` | índice). Chrome siempre abre en el primario.
 
 ## Licencia
 

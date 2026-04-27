@@ -6,12 +6,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
 
-    kiosk_url: str = "https://app.rdx.center"
+    kiosk_url: str = "https://app.rdx.social"
 
     screenshot_interval_seconds: int = 600
     watchdog_interval_seconds: int = 30
     retention_interval_seconds: int = 3600
     offline_threshold_seconds: int = 900
+
+    # primary | all | 1 | 2 | ...  (índice de mss; 1 = primario, 2 = secundario)
+    screenshot_monitor: str = "primary"
 
     retention_hours_full: int = 24
     keep_daily_archive: bool = True

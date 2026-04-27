@@ -15,10 +15,42 @@ MAX_WIDTH = 1920
 JPEG_QUALITY = 75
 
 
-def capture_primary_screen() -> Optional[Image.Image]:
+def _select_monitor(sct: "mss.base.MSSBase") -> Optional[dict]:
+    """Resuelve el monitor a capturar según settings.screenshot_monitor.
+
+    mss.monitors[0] = bounding box de TODOS los monitores combinados.
+    mss.monitors[1] = monitor primario.
+    mss.monitors[2+] = monitores secundarios.
+    """
+    monitors = sct.monitors
+    if not monitors:
+        return None
+
+    setting = (settings.screenshot_monitor or "primary").strip().lower()
+
+    if setting == "all":
+        return monitors[0]
+    if setting == "primary":
+        return monitors[1] if len(monitors) > 1 else monitors[0]
+
+    try:
+        idx = int(setting)
+        if 0 <= idx < len(monitors):
+            return monitors[idx]
+        log.warning("SCREENSHOT_MONITOR=%s fuera de rango (hay %d). Usando primario.", setting, len(monitors))
+    except ValueError:
+        log.warning("SCREENSHOT_MONITOR=%s no reconocido. Usando primario.", setting)
+
+    return monitors[1] if len(monitors) > 1 else monitors[0]
+
+
+def capture_screen() -> Optional[Image.Image]:
     try:
         with mss.mss() as sct:
-            monitor = sct.monitors[1] if len(sct.monitors) > 1 else sct.monitors[0]
+            monitor = _select_monitor(sct)
+            if monitor is None:
+                log.warning("No hay monitores disponibles")
+                return None
             raw = sct.grab(monitor)
             return Image.frombytes("RGB", raw.size, raw.bgra, "raw", "BGRX")
     except Exception:
@@ -27,7 +59,7 @@ def capture_primary_screen() -> Optional[Image.Image]:
 
 
 def save_screenshot(db: Session, totem_id: int) -> Optional[Screenshot]:
-    img = capture_primary_screen()
+    img = capture_screen()
     if img is None:
         return None
 
