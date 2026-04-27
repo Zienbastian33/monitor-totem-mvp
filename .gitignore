@@ -40,3 +40,8 @@ desktop.ini
 dist/
 build/
 *.spec
+
+# Agents / Claude
+.agents/
+.claude/
+skills-lock.json

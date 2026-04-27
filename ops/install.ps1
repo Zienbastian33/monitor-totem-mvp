@@ -22,7 +22,7 @@
     Si dejas el placeholder, debes pasar -GithubUser <tu-usuario>.
 
 .PARAMETER RepoName
-    Nombre del repositorio. Default: rdx-totem-mvp
+    Nombre del repositorio. Default: monitor-totem-mvp
 
 .PARAMETER Branch
     Rama a descargar. Default: main
@@ -45,7 +45,7 @@
 [CmdletBinding()]
 param(
     [string]$GithubUser = "zienbastian33",
-    [string]$RepoName = "rdx-totem-mvp",
+    [string]$RepoName = "monitor-totem-mvp",
     [string]$Branch = "main",
     [string]$InstallDir = "C:\rdx-totem-mvp",
     [string]$KioskUrl = "https://app.rdx.social",

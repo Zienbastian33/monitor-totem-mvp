@@ -19,7 +19,7 @@ Python 3.12 · FastAPI · SQLite · Jinja2 · mss · psutil · APScheduler · ng
 Desde PowerShell **como administrador** en la PC tótem:
 
 ```powershell
-iwr https://raw.githubusercontent.com/zienbastian33/rdx-totem-mvp/main/ops/install.ps1 -OutFile install.ps1; .\install.ps1
+iwr https://raw.githubusercontent.com/zienbastian33/monitor-totem-mvp/main/ops/install.ps1 -OutFile install.ps1; .\install.ps1
 ```
 
 El script:
