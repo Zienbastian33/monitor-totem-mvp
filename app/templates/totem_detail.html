@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}{{ totem.name }} · RDx Tótems{% endblock %}
+
+{% block content %}
+<a href="/" class="inline-flex items-center gap-2 text-xs text-zinc-500 hover:text-rdx-accent transition mb-8">
+  <span>←</span>
+  <span class="uppercase tracking-[0.2em]">Volver</span>
+</a>
+
+<div class="flex items-start justify-between gap-4 flex-wrap mb-10">
+  <div>
+    <h1 class="font-serif text-4xl md:text-5xl tracking-tight mb-3">{{ totem.name }}</h1>
+    <p class="text-zinc-500">{{ totem.location or 'Sin ubicación' }}</p>
+  </div>
+  {% include "_status_pill.html" %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+  <div class="lg:col-span-2 rounded-lg border border-zinc-900 bg-zinc-950 overflow-hidden">
+    <div class="aspect-video bg-zinc-900 relative">
+      {% if last_screenshot %}
+      <a href="/screenshots/{{ last_screenshot.path }}" target="_blank">
+        <img src="/screenshots/{{ last_screenshot.path }}" alt="Última captura" class="w-full h-full object-cover">
+      </a>
+      <div class="absolute bottom-3 right-3 bg-zinc-950/80 backdrop-blur px-3 py-1.5 rounded text-xs font-mono text-zinc-300">
+        {{ last_screenshot.taken_at|format_local }} · {{ last_screenshot.taken_at|relative_time }}
+      </div>
+      {% else %}
+      <div class="w-full h-full flex items-center justify-center text-zinc-700">
+        Sin captura todavía
+      </div>
+      {% endif %}
+    </div>
+    {% if last_screenshot %}
+    <div class="px-5 py-3 border-t border-zinc-900 flex items-center justify-between text-[11px] font-mono text-zinc-500">
+      <span>{{ last_screenshot.width }}×{{ last_screenshot.height }}</span>
+      <span>{{ last_screenshot.bytes|humanbytes }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="space-y-4">
+    <div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-5">
+      <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-3">Chrome local</div>
+      <div class="font-mono text-sm">
+        {% if chrome_running %}
+        <span class="text-rdx-accent">● corriendo</span>
+        {% else %}
+        <span class="text-red-400">● no detectado</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-5">
+      <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-3">Hostname</div>
+      <div class="font-mono text-sm text-zinc-300 break-all">{{ totem.hostname }}</div>
+    </div>
+    <div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-5">
+      <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-3">URL kiosko</div>
+      <div class="font-mono text-xs text-zinc-300 break-all">{{ kiosk_url }}</div>
+    </div>
+    <div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-5">
+      <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-3">Heartbeat</div>
+      <div class="font-mono text-sm text-zinc-300">{{ totem.last_heartbeat|format_local }}</div>
+      <div class="text-xs text-zinc-500 mt-1">{{ totem.last_heartbeat|relative_time }}</div>
+    </div>
+    <div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-5">
+      <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-3">Identidad</div>
+      <div class="font-mono text-xs text-zinc-300 break-all">{{ totem.public_id }}</div>
+      <div class="text-[10px] text-zinc-500 mt-1">creado {{ totem.created_at|format_local }}</div>
+    </div>
+  </div>
+</div>
+
+{% if recent %}
+<section class="mb-12">
+  <h2 class="font-serif text-2xl mb-1">Últimas 24 horas</h2>
+  <p class="text-zinc-500 text-sm mb-6">{{ recent|length }} captura{{ '' if recent|length == 1 else 's' }}, una cada 10 minutos.</p>
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+    {% for s in recent %}
+    <a href="/screenshots/{{ s.path }}" target="_blank" class="group block">
+      <div class="aspect-video rounded border border-zinc-900 bg-zinc-900 overflow-hidden hover:border-rdx-accent/40 transition">
+        <img src="/screenshots/{{ s.path }}" alt="{{ s.taken_at }}" loading="lazy" class="w-full h-full object-cover">
+      </div>
+      <div class="mt-1.5 text-[10px] font-mono text-zinc-500 group-hover:text-rdx-accent transition">
+        {{ s.taken_at|format_local('%H:%M') }}
+        <span class="text-zinc-700">· {{ s.taken_at|format_local('%d %b') }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if archive %}
+<section>
+  <h2 class="font-serif text-2xl mb-1">Archivo histórico</h2>
+  <p class="text-zinc-500 text-sm mb-6">Una captura por día, conservadas indefinidamente.</p>
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+    {% for s in archive %}
+    <a href="/screenshots/{{ s.path }}" target="_blank" class="group block">
+      <div class="aspect-video rounded border border-zinc-900 bg-zinc-900 overflow-hidden hover:border-rdx-accent/40 transition">
+        <img src="/screenshots/{{ s.path }}" alt="{{ s.taken_at }}" loading="lazy" class="w-full h-full object-cover">
+      </div>
+      <div class="mt-1.5 text-[10px] font-mono text-zinc-500 group-hover:text-rdx-accent transition">
+        {{ s.taken_at|format_local('%d %b %Y') }}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

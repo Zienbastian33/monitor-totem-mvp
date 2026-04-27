@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Tótems · RDx{% endblock %}
+
+{% block content %}
+<div class="mb-12">
+  <h1 class="font-serif text-4xl md:text-5xl mb-3 tracking-tight">Tótems</h1>
+  <p class="text-zinc-500">
+    {% if cards|length == 0 %}
+      Sin dispositivos registrados todavía
+    {% elif cards|length == 1 %}
+      1 dispositivo monitoreado
+    {% else %}
+      {{ cards|length }} dispositivos monitoreados
+    {% endif %}
+  </p>
+</div>
+
+{% if not cards %}
+<div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-10 text-center">
+  <p class="text-zinc-400">El primer tótem aparece en cuanto el servicio termine su primer heartbeat.</p>
+</div>
+{% else %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  {% for card in cards %}
+  {% set t = card.totem %}
+  {% set s = card.last_screenshot %}
+  <a href="/totems/{{ t.public_id }}" class="group rounded-lg border border-zinc-900 bg-zinc-950 hover:border-zinc-700 hover:bg-zinc-900/40 transition overflow-hidden">
+    <div class="aspect-video bg-zinc-900 relative overflow-hidden">
+      {% if s %}
+      <img src="/screenshots/{{ s.path }}" alt="{{ t.name }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+      <div class="absolute bottom-2 right-2 bg-zinc-950/80 backdrop-blur px-2 py-1 rounded text-[10px] font-mono text-zinc-300">
+        {{ s.taken_at|relative_time }}
+      </div>
+      {% else %}
+      <div class="w-full h-full flex items-center justify-center text-zinc-700 text-sm">
+        Sin captura todavía
+      </div>
+      {% endif %}
+    </div>
+    <div class="p-5">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          <h2 class="font-serif text-xl truncate group-hover:text-rdx-accent transition">{{ t.name }}</h2>
+          <p class="text-xs text-zinc-500 mt-1 truncate">{{ t.location or 'Sin ubicación' }}</p>
+        </div>
+        {% with status=card.status %}{% include "_status_pill.html" %}{% endwith %}
+      </div>
+      <div class="mt-4 pt-4 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+        <span class="truncate">{{ t.hostname }}</span>
+        <span class="shrink-0 ml-3">{{ t.last_heartbeat|relative_time }}</span>
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+  <div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-5">
+    <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2">URL kiosko</div>
+    <div class="font-mono text-zinc-300 break-all text-xs">{{ kiosk_url }}</div>
+  </div>
+  <div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-5">
+    <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2">Chrome local</div>
+    <div class="font-mono text-xs">
+      {% if chrome_running %}
+      <span class="text-rdx-accent">● corriendo</span>
+      {% else %}
+      <span class="text-red-400">● no detectado</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-5">
+    <div class="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2">Túnel público</div>
+    <div class="font-mono text-xs break-all">
+      {% if ngrok_url %}
+      <a href="{{ ngrok_url }}" class="text-zinc-300 hover:text-rdx-accent">{{ ngrok_url }}</a>
+      {% else %}
+      <span class="text-zinc-600">— no detectado (¿ngrok corriendo?)</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

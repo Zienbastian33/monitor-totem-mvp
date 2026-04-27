@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+*.egg
+
+# Data (runtime artifacts — should not be committed)
+data/
+*.db
+*.sqlite
+*.sqlite3
+logs/
+screenshots/
+
+# Env / secrets
+.env
+.env.local
+*.pem
+ngrok.yml
+ngrok-auth.txt
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build artifacts
+dist/
+build/
+*.spec
