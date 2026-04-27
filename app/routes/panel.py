@@ -42,9 +42,9 @@ def index(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
         )
 
     return request.app.state.templates.TemplateResponse(
+        request,
         "index.html",
         {
-            "request": request,
             "cards": cards,
             "chrome_running": chrome.is_running(),
             "kiosk_url": settings.kiosk_url,
@@ -74,9 +74,9 @@ def totem_detail(public_id: str, request: Request, db: Session = Depends(get_db)
     ).all()
 
     return request.app.state.templates.TemplateResponse(
+        request,
         "totem_detail.html",
         {
-            "request": request,
             "totem": totem,
             "status": _status_for(totem),
             "last_screenshot": recent[0] if recent else None,
