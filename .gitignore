@@ -45,3 +45,5 @@ build/
 .agents/
 .claude/
 skills-lock.json
+CLAUDE.md
+DIAGNOSTICO.md

@@ -4,6 +4,7 @@ import os
 import platform
 import shutil
 import subprocess
+import webbrowser
 from pathlib import Path
 from typing import Optional
 
@@ -73,6 +74,7 @@ class ChromeManager:
         self.user_data_dir.mkdir(parents=True, exist_ok=True)
         self._pid: Optional[int] = None
         self._marker = f"--user-data-dir={self.user_data_dir}"
+        self._fallback_mode: bool = False
 
     def _matches_our_chrome(self, proc: psutil.Process) -> bool:
         try:
@@ -93,6 +95,8 @@ class ChromeManager:
         return next(iter(self._iter_our_chromes()), None)
 
     def is_running(self) -> bool:
+        if self._fallback_mode:
+            return True
         if self._pid is not None and psutil.pid_exists(self._pid):
             try:
                 proc = psutil.Process(self._pid)
@@ -130,8 +134,18 @@ class ChromeManager:
 
     def launch(self, url: str) -> bool:
         if self.binary is None:
-            log.warning("Chrome no encontrado. Define CHROME_PATH en .env si está en una ruta no estándar.")
-            return False
+            log.warning(
+                "Chrome no encontrado. Abriendo %s con el navegador por defecto del sistema "
+                "(modo degradado: sin kiosko, sin watchdog).",
+                url,
+            )
+            try:
+                webbrowser.open(url, new=1, autoraise=True)
+                self._fallback_mode = True
+                return True
+            except Exception:
+                log.exception("Falló apertura con navegador por defecto")
+                return False
         self.fix_session_crashed()
         try:
             proc = subprocess.Popen(

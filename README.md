@@ -56,6 +56,12 @@ uvicorn app.main:app --reload
 
 Visita http://localhost:8000.
 
+> **LAN access (otra PC en la misma red):** `--reload` ignora el `HOST` del `.env` y bindea a `127.0.0.1`. Para que otra máquina pueda abrir el panel, pasá `--host` explícito:
+> ```
+> uvicorn app.main:app --reload --host 0.0.0.0
+> ```
+> Después abrí `http://<ip-lan-del-equipo>:8000` desde la otra PC.
+
 > En Linux/macOS la captura de pantalla y el lanzamiento de Chrome funcionan, pero la integración completa (Scheduled Task, kiosko full) está pensada solo para Windows.
 
 ## Estructura

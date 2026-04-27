@@ -37,6 +37,13 @@ def setup_logging() -> None:
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 
+    # Uvicorn's own loggers don't propagate to root by default, so attach our
+    # handlers directly so 500 tracebacks land in rdx-totem.log.
+    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+        uv_logger = logging.getLogger(name)
+        uv_logger.handlers = [stream_handler, file_handler]
+        uv_logger.propagate = False
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
