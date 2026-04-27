@@ -85,33 +85,72 @@ if (-not (Test-CmdAvail "winget")) {
 }
 Write-Ok "winget disponible"
 
-# --- 2. Python 3.12+ ---
-Write-Step "Verificando Python 3.12+"
-$pythonCmd = $null
-foreach ($candidate in @("py", "python", "python3")) {
-    if (Test-CmdAvail $candidate) {
-        try {
-            $version = & $candidate -V 2>&1
-            if ($version -match "3\.(1[2-9]|[2-9]\d)") {
-                $pythonCmd = $candidate
-                Write-Ok "Python encontrado: $version (cmd: $candidate)"
-                break
-            }
-        } catch {}
+# --- 2. Python 3.12 o 3.13 ---
+# Forzamos 3.12 o 3.13. Python 3.14 rompe librerías con C extensions
+# (ej. Pillow no tiene wheels prebuilt todavía).
+Write-Step "Verificando Python 3.12 o 3.13"
+$pythonExe = $null
+
+function Resolve-PythonExe {
+    param([string]$Cmd, [string[]]$ArgsBefore = @())
+    try {
+        $invoke = @($Cmd) + $ArgsBefore + @("-c", "import sys; print(sys.executable)")
+        $exe = & $invoke[0] $invoke[1..($invoke.Length - 1)] 2>$null
+        if ($LASTEXITCODE -eq 0 -and $exe) {
+            $exe = $exe.Trim()
+            if (Test-Path $exe) { return $exe }
+        }
+    } catch {}
+    return $null
+}
+
+# Probar py launcher con versión explícita
+foreach ($ver in @("3.12", "3.13")) {
+    if (Test-CmdAvail "py") {
+        $exe = Resolve-PythonExe -Cmd "py" -ArgsBefore @("-$ver")
+        if ($exe) {
+            $pythonExe = $exe
+            Write-Ok "Python $ver encontrado: $exe"
+            break
+        }
     }
 }
-if (-not $pythonCmd) {
+
+# Fallback: python / python3 en PATH si tienen 3.12 o 3.13
+if (-not $pythonExe) {
+    foreach ($candidate in @("python", "python3")) {
+        if (Test-CmdAvail $candidate) {
+            try {
+                $version = & $candidate -V 2>&1
+                if ($version -match "Python 3\.(12|13)") {
+                    $exe = Resolve-PythonExe -Cmd $candidate
+                    if ($exe) {
+                        $pythonExe = $exe
+                        Write-Ok "Python encontrado: $version ($exe)"
+                        break
+                    }
+                }
+            } catch {}
+        }
+    }
+}
+
+# No hay 3.12/3.13 → instalar 3.12
+if (-not $pythonExe) {
     Write-Host "  Instalando Python 3.12 via winget..."
     winget install --id Python.Python.3.12 --silent --accept-source-agreements --accept-package-agreements | Out-Null
     Refresh-Path
-    foreach ($candidate in @("py", "python")) {
-        if (Test-CmdAvail $candidate) { $pythonCmd = $candidate; break }
+    Start-Sleep -Seconds 2
+
+    if (Test-CmdAvail "py") {
+        $pythonExe = Resolve-PythonExe -Cmd "py" -ArgsBefore @("-3.12")
     }
-    if (-not $pythonCmd) {
-        Write-Host "Python instalado pero no en PATH. Reinicia PowerShell y reintenta." -ForegroundColor Red
+
+    if (-not $pythonExe) {
+        Write-Host "Python instalado pero no detectado en PATH. Reinicia PowerShell y reintenta." -ForegroundColor Red
         exit 1
     }
-    Write-Ok "Python 3.12 instalado"
+    Write-Ok "Python 3.12 instalado: $pythonExe"
 }
 
 # --- 3. ngrok ---
@@ -168,7 +207,7 @@ $venvPython = Join-Path $venvDir "Scripts\python.exe"
 $venvPip    = Join-Path $venvDir "Scripts\pip.exe"
 
 if (-not (Test-Path $venvPython)) {
-    & $pythonCmd -m venv $venvDir
+    & $pythonExe -m venv $venvDir
 }
 Write-Ok "venv listo"
 

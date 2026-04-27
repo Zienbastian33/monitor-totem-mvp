@@ -34,11 +34,23 @@ El script:
 
 ## Desarrollo local (sin Windows / sin tótem real)
 
+**Requiere Python 3.12 o 3.13** (Pillow todavía no tiene wheels prebuilt para 3.14).
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate            # o .venv\Scripts\activate en Windows
+# Linux / macOS
+python3.12 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
+uvicorn app.main:app --reload
+```
+
+```powershell
+# Windows (PowerShell o Git Bash)
+py -3.12 -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
 uvicorn app.main:app --reload
 ```
 
