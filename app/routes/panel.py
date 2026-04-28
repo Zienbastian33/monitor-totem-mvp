@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from ..chrome_watchdog import chrome
 from ..config import settings
 from ..db import get_db
+from ..disk_usage import screenshots_disk_usage
 from ..models import Screenshot, Totem
 from ..ngrok_client import get_public_url
 
@@ -41,6 +42,8 @@ def index(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
             }
         )
 
+    disk_bytes, disk_files = screenshots_disk_usage()
+
     return request.app.state.templates.TemplateResponse(
         request,
         "index.html",
@@ -49,6 +52,8 @@ def index(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
             "chrome_running": chrome.is_running(),
             "kiosk_url": settings.kiosk_url,
             "ngrok_url": get_public_url(),
+            "disk_bytes": disk_bytes,
+            "disk_files": disk_files,
         },
     )
 

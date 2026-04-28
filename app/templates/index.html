@@ -59,7 +59,7 @@
 </div>
 {% endif %}
 
-<div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+<div class="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
   <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
     <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-2">URL kiosko</div>
     <div class="font-mono text-xs text-gray-700 break-all">{{ kiosk_url }}</div>
@@ -82,6 +82,13 @@
       {% else %}
       <span class="text-gray-400">— no detectado (¿ngrok corriendo?)</span>
       {% endif %}
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+    <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-2">Uso de disco</div>
+    <div class="font-mono text-xs text-gray-700">
+      {{ disk_bytes|humanbytes }}
+      <span class="text-gray-400">· {{ disk_files }} captura{{ '' if disk_files == 1 else 's' }}</span>
     </div>
   </div>
 </div>
