@@ -6,7 +6,7 @@ Pequeña plataforma para tótems físicos Windows que muestran sitios web en kio
 
 - Abre Chrome en pantalla completa apuntando a una URL configurable (por defecto `app.rdx.social`).
 - Si Chrome se cae, lo relanza solo (watchdog).
-- Toma screenshot del escritorio cada 10 minutos (monitor primario por defecto, configurable a `all` o un índice específico).
+- Toma screenshot del escritorio cada 15 minutos (monitor primario por defecto, configurable a `all` o un índice específico).
 - Sirve un panel web para supervisar el tótem desde otra computadora vía ngrok.
 - Se inicia automáticamente al boot de Windows.
 
@@ -98,11 +98,30 @@ rdx-totem-mvp/
 - **Logs**: `data/logs/rdx-totem.log`.
 - **Datos**: `data/totems.db` + `data/screenshots/`.
 
+## Acceso remoto desde fuera de la LAN (ngrok)
+
+El panel se puede exponer a internet con ngrok. En la PC tótem (o dev), en una segunda terminal — sin venv activado, ngrok es un binario standalone:
+
+```powershell
+ngrok http 8000
+```
+
+Mantén esa ventana abierta. Una URL `https://xxxx.ngrok-free.app` aparecerá en la cabecera del panel y podrás abrirla desde cualquier red, incluido el celular con datos móviles.
+
+> **Importante**: si vas a exponer por ngrok, define `PANEL_PASSWORD` en `.env` antes de iniciar el servicio. Sin password el panel queda público.
+
+Limitaciones del plan free:
+
+- La URL **rota** cada vez que reinicias `ngrok`.
+- 1 GB/mes de bandwidth — los thumbnails (480 px) reducen ~6× el consumo vs. servir los originales.
+
+Para URL fija: plan ngrok paid o migrar a Cloudflare Tunnel (requiere dominio propio).
+
 ## Limitaciones del MVP
 
 - Diseñado para 1 tótem. La estructura permite N pero el panel todavía no orquesta múltiples.
 - ngrok free: la URL pública cambia cada vez que reinicia ngrok (a menos que pagues plan fijo).
-- Sin auth: cualquiera con la URL ngrok ve el panel. Mitigación: URL aleatoria es difícil de adivinar; no expongas datos sensibles en el panel.
+- Auth opcional vía `PANEL_PASSWORD`. Si está vacío, el panel queda abierto (modo dev).
 - Multi-monitor soportado vía `SCREENSHOT_MONITOR` (`primary` | `all` | índice). Chrome siempre abre en el primario.
 
 ## Licencia

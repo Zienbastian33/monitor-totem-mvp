@@ -115,7 +115,7 @@ Notas:
 ### 4.3 Frecuencia de captura
 
 ```env
-SCREENSHOT_INTERVAL_SECONDS=600    # 10 min (default)
+SCREENSHOT_INTERVAL_SECONDS=900    # 15 min (default)
 SCREENSHOT_INTERVAL_SECONDS=300    # 5 min
 ```
 
@@ -125,6 +125,26 @@ SCREENSHOT_INTERVAL_SECONDS=300    # 5 min
 RETENTION_HOURS_FULL=24            # ventana móvil de detalle (default 24h)
 KEEP_DAILY_ARCHIVE=true            # conservar 1 por día como archivo permanente
 ```
+
+### 4.5 Auth del panel
+
+Para proteger el panel con un password compartido (recomendado al exponer por ngrok), edita `.env`:
+
+```env
+PANEL_USERNAME=admin
+PANEL_PASSWORD=un-password-largo-aleatorio
+```
+
+Con `PANEL_PASSWORD` vacío, el panel queda abierto (modo dev). Tras editar, reinicia el servicio:
+
+```powershell
+Stop-ScheduledTask -TaskName RDxTotem
+Start-ScheduledTask -TaskName RDxTotem
+```
+
+El navegador pedirá usuario/password en el primer acceso. `/api/health` queda público a propósito (probes).
+
+Para rotar el password: editar `.env`, reiniciar, y los navegadores con credenciales viejas serán rechazados con 401 hasta que re-introduzcan las nuevas.
 
 ## 5. Actualizar a una nueva versión
 
@@ -171,7 +191,15 @@ cd C:\rdx-totem-mvp
 
 ### El servicio dice "online" pero el panel marca offline
 
-- El campo `last_heartbeat` se actualiza cada 10 min (en cada captura). Si el servicio está corriendo recién, espera al primer screenshot.
+- El campo `last_heartbeat` se actualiza cada 15 min (en cada captura). Si el servicio está corriendo recién, espera al primer screenshot.
+
+### El display del tótem se sigue apagando
+
+La app llama `SetThreadExecutionState(ES_DISPLAY_REQUIRED)` al iniciar, lo que evita el sleep estándar. Pero si la cuenta de Windows tiene un **screensaver con "Al reanudar mostrar pantalla de inicio de sesión"**, Windows ignora ese flag y bloquea igual.
+
+Solución: deshabilitar el screensaver desde Configuración → Personalización → Pantalla de bloqueo → Configuración del protector de pantalla → "Ninguno", o quitar el check de "Al reanudar mostrar pantalla de inicio de sesión".
+
+`install.ps1` ya maneja los timeouts de monitor/standby vía `powercfg`, pero el screensaver es independiente.
 
 ### Los screenshots se ven en negro
 
