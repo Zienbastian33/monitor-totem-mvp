@@ -34,6 +34,9 @@ class Settings(BaseSettings):
 
     ngrok_local_api: str = "http://localhost:4040"
 
+    panel_username: str = "admin"
+    panel_password: str = ""
+
     @property
     def data_path(self) -> Path:
         base = Path(self.data_dir) if self.data_dir else Path("data")
