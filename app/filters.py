@@ -49,10 +49,18 @@ def humanbytes(n: Optional[int]) -> str:
 
 
 def screenshot_thumb(path: Optional[str]) -> Optional[str]:
-    """Convierte 'YYYY-MM-DD/HH-MM-SS.jpg' → 'YYYY-MM-DD/HH-MM-SS.thumb.jpg'."""
-    if path and path.endswith(".jpg") and not path.endswith(".thumb.jpg"):
-        return path[:-4] + ".thumb.jpg"
-    return path
+    """Convierte 'YYYY-MM-DD/HH-MM-SS.jpg' → 'YYYY-MM-DD/HH-MM-SS.thumb.jpg'.
+
+    Si el thumb no existe (capturas viejas previas a la migración), cae al
+    full path para no romper el <img>. El stat() por render es barato y
+    desaparece cuando todas las capturas tienen thumb.
+    """
+    if not path or not path.endswith(".jpg") or path.endswith(".thumb.jpg"):
+        return path
+    thumb = path[:-4] + ".thumb.jpg"
+    if not (settings.screenshots_path / thumb).exists():
+        return path
+    return thumb
 
 
 def register_filters(env) -> None:
