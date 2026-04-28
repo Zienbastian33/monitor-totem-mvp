@@ -60,11 +60,13 @@ def retention_job() -> None:
                     kept += 1
                     continue
                 full_path = settings.screenshots_path / ss.path
-                if full_path.exists():
-                    try:
-                        full_path.unlink()
-                    except OSError:
-                        log.exception("No pude borrar %s", full_path)
+                thumb_path = full_path.with_name(full_path.stem + ".thumb.jpg")
+                for p in (full_path, thumb_path):
+                    if p.exists():
+                        try:
+                            p.unlink()
+                        except OSError:
+                            log.exception("No pude borrar %s", p)
                 db.delete(ss)
                 deleted += 1
             log.info("Retención → %d archivados, %d borrados", kept, deleted)
