@@ -13,6 +13,8 @@ log = logging.getLogger(__name__)
 
 MAX_WIDTH = 1920
 JPEG_QUALITY = 75
+THUMB_WIDTH = 480
+THUMB_QUALITY = 60
 
 
 def _select_monitor(sct: "mss.base.MSSBase") -> Optional[dict]:
@@ -73,6 +75,16 @@ def save_screenshot(db: Session, totem_id: int) -> Optional[Screenshot]:
         img = img.resize((MAX_WIDTH, int(img.height * ratio)), Image.LANCZOS)
 
     img.save(full_path, "JPEG", quality=JPEG_QUALITY, optimize=True)
+
+    try:
+        thumb = img.copy()
+        if thumb.width > THUMB_WIDTH:
+            ratio = THUMB_WIDTH / thumb.width
+            thumb = thumb.resize((THUMB_WIDTH, int(thumb.height * ratio)), Image.LANCZOS)
+        thumb_path = full_path.with_name(full_path.stem + ".thumb.jpg")
+        thumb.save(thumb_path, "JPEG", quality=THUMB_QUALITY, optimize=True)
+    except Exception:
+        log.exception("Falló generación de thumb para %s", full_path)
 
     relative_path = full_path.relative_to(settings.screenshots_path).as_posix()
 

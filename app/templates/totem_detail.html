@@ -78,7 +78,7 @@
     {% for s in recent %}
     <a href="/screenshots/{{ s.path }}" target="_blank" class="group block">
       <div class="aspect-video rounded-md border border-gray-200 bg-gray-100 overflow-hidden hover:border-gray-300 transition-colors">
-        <img src="/screenshots/{{ s.path }}" alt="{{ s.taken_at }}" loading="lazy" class="w-full h-full object-cover">
+        <img src="/screenshots/{{ s.path|screenshot_thumb }}" alt="{{ s.taken_at }}" loading="lazy" class="w-full h-full object-cover">
       </div>
       <div class="mt-1.5 text-[10px] font-mono text-gray-400 group-hover:text-gray-700 transition-colors">
         {{ s.taken_at|format_local('%H:%M') }}
@@ -98,7 +98,7 @@
     {% for s in archive %}
     <a href="/screenshots/{{ s.path }}" target="_blank" class="group block">
       <div class="aspect-video rounded-md border border-gray-200 bg-gray-100 overflow-hidden hover:border-gray-300 transition-colors">
-        <img src="/screenshots/{{ s.path }}" alt="{{ s.taken_at }}" loading="lazy" class="w-full h-full object-cover">
+        <img src="/screenshots/{{ s.path|screenshot_thumb }}" alt="{{ s.taken_at }}" loading="lazy" class="w-full h-full object-cover">
       </div>
       <div class="mt-1.5 text-[10px] font-mono text-gray-400 group-hover:text-gray-700 transition-colors">
         {{ s.taken_at|format_local('%d %b %Y') }}

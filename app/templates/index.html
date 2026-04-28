@@ -31,7 +31,7 @@
   <a href="/totems/{{ t.public_id }}" class="group bg-white rounded-2xl shadow-sm border border-gray-200 hover:border-gray-300 hover:-translate-y-px transition-all overflow-hidden">
     <div class="aspect-video bg-gray-100 relative overflow-hidden">
       {% if s %}
-      <img src="/screenshots/{{ s.path }}" alt="{{ t.name }}" loading="lazy" class="w-full h-full object-cover">
+      <img src="/screenshots/{{ s.path|screenshot_thumb }}" alt="{{ t.name }}" loading="lazy" class="w-full h-full object-cover">
       <div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-mono text-gray-700">
         {{ s.taken_at|relative_time }}
       </div>

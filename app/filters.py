@@ -48,8 +48,16 @@ def humanbytes(n: Optional[int]) -> str:
     return f"{value:.1f} TB"
 
 
+def screenshot_thumb(path: Optional[str]) -> Optional[str]:
+    """Convierte 'YYYY-MM-DD/HH-MM-SS.jpg' → 'YYYY-MM-DD/HH-MM-SS.thumb.jpg'."""
+    if path and path.endswith(".jpg") and not path.endswith(".thumb.jpg"):
+        return path[:-4] + ".thumb.jpg"
+    return path
+
+
 def register_filters(env) -> None:
     env.filters["to_local"] = to_local
     env.filters["format_local"] = format_local
     env.filters["relative_time"] = relative_time
     env.filters["humanbytes"] = humanbytes
+    env.filters["screenshot_thumb"] = screenshot_thumb
