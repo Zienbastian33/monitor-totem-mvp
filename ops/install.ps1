@@ -36,9 +36,17 @@
 .PARAMETER NgrokAuthToken
     Auth token de ngrok. Si no se pasa, lo pide interactivamente.
 
+.PARAMETER PanelUsername
+    Usuario para HTTP Basic auth del panel. Default: admin.
+
+.PARAMETER PanelPassword
+    Password compartido para el panel. Vacío = panel abierto (modo dev).
+    Recomendado al exponer por ngrok.
+
 .EXAMPLE
     .\install.ps1 -GithubUser bastian
     .\install.ps1 -GithubUser bastian -KioskUrl https://otra.com -NgrokAuthToken 2abc...
+    .\install.ps1 -KioskUrl https://app.rdx.social -NgrokAuthToken 2abc... -PanelPassword "S3cret-Pass"
 #>
 
 #Requires -RunAsAdministrator
@@ -49,7 +57,9 @@ param(
     [string]$Branch = "main",
     [string]$InstallDir = "C:\rdx-totem-mvp",
     [string]$KioskUrl = "https://app.rdx.social",
-    [string]$NgrokAuthToken = ""
+    [string]$NgrokAuthToken = "",
+    [string]$PanelUsername = "admin",
+    [string]$PanelPassword = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -221,10 +231,19 @@ Write-Step "Configurando .env"
 $envPath = Join-Path $InstallDir ".env"
 if (-not (Test-Path $envPath)) {
     Copy-Item (Join-Path $InstallDir ".env.example") $envPath
-    (Get-Content $envPath) -replace "^KIOSK_URL=.*", "KIOSK_URL=$KioskUrl" | Set-Content $envPath -Encoding utf8
-    Write-Ok ".env creado con KIOSK_URL=$KioskUrl"
+    $content = Get-Content $envPath
+    $content = $content -replace "^KIOSK_URL=.*", "KIOSK_URL=$KioskUrl"
+    $content = $content -replace "^PANEL_USERNAME=.*", "PANEL_USERNAME=$PanelUsername"
+    $content = $content -replace "^PANEL_PASSWORD=.*", "PANEL_PASSWORD=$PanelPassword"
+    $content | Set-Content $envPath -Encoding utf8
+    if ($PanelPassword) {
+        Write-Ok ".env creado con KIOSK_URL=$KioskUrl + auth (user=$PanelUsername)"
+    } else {
+        Write-Ok ".env creado con KIOSK_URL=$KioskUrl"
+        Write-Warn "PANEL_PASSWORD vacio: panel queda ABIERTO. Editar $envPath y reiniciar tarea para activar auth."
+    }
 } else {
-    Write-Ok ".env existente conservado"
+    Write-Ok ".env existente conservado (no se sobreescriben credenciales)"
 }
 
 # --- 7. ngrok auth token ---
@@ -330,6 +349,11 @@ if ($ngrokUrl) {
 }
 Write-Host "Logs app:    $InstallDir\data\logs\rdx-totem.log"
 Write-Host "URL kiosko:  $KioskUrl"
+if ($PanelPassword) {
+    Write-Host "Auth panel:  user=$PanelUsername / password=*** (definido en .env)" -ForegroundColor Cyan
+} else {
+    Write-Warn "Panel SIN auth. Definir PANEL_PASSWORD en $envPath y reiniciar la tarea."
+}
 Write-Host ""
 Write-Host "COMANDOS UTILES:" -ForegroundColor Yellow
 Write-Host "  Detener:    Stop-ScheduledTask -TaskName RDxTotem"
