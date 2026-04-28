@@ -12,6 +12,7 @@ from .config import settings
 from .db import init_db, session_scope
 from .filters import register_filters
 from .jobs import build_scheduler
+from .power import keep_awake
 from .routes import api as api_routes
 from .routes import panel
 from .totem_registry import ensure_local_totem
@@ -50,6 +51,8 @@ async def lifespan(app: FastAPI):
     setup_logging()
     log = logging.getLogger("rdx-totem")
     log.info("Iniciando RDx Totem MVP")
+
+    keep_awake()
 
     init_db()
 
