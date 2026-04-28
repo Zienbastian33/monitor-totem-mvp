@@ -1,16 +1,15 @@
-{% if status == 'online' %}
-<span class="shrink-0 inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] uppercase tracking-[0.15em] bg-rdx-accent/10 text-rdx-accent border border-rdx-accent/20">
-  <span class="w-1.5 h-1.5 rounded-full bg-rdx-accent pulse-dot"></span>
-  activo
+{% set _styles = {
+  'online':  'bg-green-100 text-green-700 border-green-200',
+  'offline': 'bg-red-50 text-red-700 border-red-200',
+  'unknown': 'bg-gray-100 text-gray-500 border-gray-200',
+} %}
+{% set _labels = {
+  'online':  'online',
+  'offline': 'offline',
+  'unknown': 'sin datos',
+} %}
+{% set _key = status if status in _styles else 'unknown' %}
+<span class="shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border {{ _styles[_key] }}">
+  <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+  {{ _labels[_key] }}
 </span>
-{% elif status == 'offline' %}
-<span class="shrink-0 inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] uppercase tracking-[0.15em] bg-red-500/10 text-red-400 border border-red-500/20">
-  <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-  offline
-</span>
-{% else %}
-<span class="shrink-0 inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] uppercase tracking-[0.15em] bg-zinc-800/40 text-zinc-400 border border-zinc-700/40">
-  <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
-  sin datos
-</span>
-{% endif %}
