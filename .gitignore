@@ -47,3 +47,9 @@ build/
 skills-lock.json
 CLAUDE.md
 DIAGNOSTICO.md
+
+# Documento interno — system prompt para LLM operario, no es parte del MVP.
+docs/AGENT_PROMPT.md
+
+# Workflow interno — specs y plans del agente, no son parte del MVP.
+docs/superpowers/
