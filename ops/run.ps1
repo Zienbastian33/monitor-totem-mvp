@@ -40,8 +40,16 @@ Start-Sleep -Seconds 2
 # Lanza FastAPI en foreground.
 $venvPython = Join-Path $InstallDir ".venv\Scripts\python.exe"
 if (-not (Test-Path $venvPython)) {
-    Write-Error "No encontré $venvPython. Corre primero install.ps1."
+    Write-Error "No encontre $venvPython. Corre primero install.ps1."
     exit 1
 }
 
-& $venvPython -m app.main
+# stderr se redirige a app-stderr.log para capturar tracebacks de import-time
+# (los que ocurren antes de que setup_logging() configure el RotatingFileHandler).
+$stderrLog = Join-Path $LogsDir "app-stderr.log"
+& $venvPython -m app.main 2>> $stderrLog
+
+# Propagamos el exit code de python para que la Scheduled Task vea las fallas
+# y aplique RestartInterval. Sin esto el wrapper terminaria con 0 aunque
+# python haya crasheado, y el scheduler considera la corrida exitosa.
+exit $LASTEXITCODE
