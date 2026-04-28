@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
     kiosk_url: str = "https://app.rdx.social"
 
-    screenshot_interval_seconds: int = 600
+    screenshot_interval_seconds: int = 900
     watchdog_interval_seconds: int = 30
     retention_interval_seconds: int = 3600
     offline_threshold_seconds: int = 900
