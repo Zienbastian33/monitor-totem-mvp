@@ -10,10 +10,13 @@ from ..db import get_db
 from ..models import Totem
 from ..ngrok_client import get_public_url
 
+# Public: no auth required (probes, health checks).
+public_router = APIRouter()
+# Protected: auth applied at app.include_router level.
 router = APIRouter()
 
 
-@router.get("/health")
+@public_router.get("/health")
 def health() -> dict:
     return {"status": "ok", "ts": datetime.now(timezone.utc).isoformat()}
 

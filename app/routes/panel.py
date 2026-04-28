@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
@@ -92,3 +92,14 @@ def totem_detail(public_id: str, request: Request, db: Session = Depends(get_db)
             "ngrok_url": get_public_url(),
         },
     )
+
+
+@router.get("/screenshots/{path:path}")
+def serve_screenshot(path: str) -> FileResponse:
+    base = settings.screenshots_path.resolve()
+    target = (base / path).resolve()
+    if not target.is_relative_to(base):
+        raise HTTPException(status_code=404, detail="Not found")
+    if not target.is_file():
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(target)

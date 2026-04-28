@@ -3,10 +3,11 @@ import logging.handlers
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from .auth import require_auth
 from .chrome_watchdog import chrome
 from .config import settings
 from .db import init_db, session_scope
@@ -92,14 +93,10 @@ def create_app() -> FastAPI:
     app.state.templates = templates
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-    app.mount(
-        "/screenshots",
-        StaticFiles(directory=str(settings.screenshots_path)),
-        name="screenshots",
-    )
 
-    app.include_router(panel.router)
-    app.include_router(api_routes.router, prefix="/api")
+    app.include_router(api_routes.public_router, prefix="/api")
+    app.include_router(panel.router, dependencies=[Depends(require_auth)])
+    app.include_router(api_routes.router, prefix="/api", dependencies=[Depends(require_auth)])
 
     return app
 
