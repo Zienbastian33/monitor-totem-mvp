@@ -231,7 +231,8 @@ Write-Step "Configurando .env"
 $envPath = Join-Path $InstallDir ".env"
 if (-not (Test-Path $envPath)) {
     Copy-Item (Join-Path $InstallDir ".env.example") $envPath
-    $content = Get-Content $envPath
+    # -Encoding utf8 al leer para no introducir mojibake (PS 5.1 lee como ANSI por default).
+    $content = Get-Content $envPath -Encoding utf8
     $content = $content -replace "^KIOSK_URL=.*", "KIOSK_URL=$KioskUrl"
     $content = $content -replace "^PANEL_USERNAME=.*", "PANEL_USERNAME=$PanelUsername"
     $content = $content -replace "^PANEL_PASSWORD=.*", "PANEL_PASSWORD=$PanelPassword"
@@ -323,10 +324,13 @@ Start-ScheduledTask -TaskName $taskName
 Start-Sleep -Seconds 5
 
 Write-Step "Esperando URL publica de ngrok (max 30s)..."
+# Damos 5s de gracia antes de empezar a pollear: localhost:4040 tarda en levantar
+# y un timeout de 1s en la primera consulta tiende a fallar agresivamente.
+Start-Sleep -Seconds 5
 $ngrokUrl = $null
-for ($i = 0; $i -lt 30; $i++) {
+for ($i = 0; $i -lt 25; $i++) {
     try {
-        $resp   = Invoke-RestMethod -Uri "http://localhost:4040/api/tunnels" -TimeoutSec 1 -ErrorAction Stop
+        $resp   = Invoke-RestMethod -Uri "http://localhost:4040/api/tunnels" -TimeoutSec 3 -ErrorAction Stop
         $tunnel = $resp.tunnels | Where-Object { $_.public_url -like "https://*" } | Select-Object -First 1
         if ($tunnel) { $ngrokUrl = $tunnel.public_url; break }
     } catch {}
