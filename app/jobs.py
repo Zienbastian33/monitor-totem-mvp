@@ -7,6 +7,7 @@ from sqlalchemy import select
 from .chrome_watchdog import chrome
 from .config import settings
 from .db import session_scope
+from .kiosk_control import is_enabled as kiosk_is_enabled
 from .models import Screenshot
 from .screenshots import save_screenshot
 from .totem_registry import ensure_local_totem, touch_heartbeat
@@ -26,6 +27,13 @@ def screenshot_job() -> None:
 
 def watchdog_job() -> None:
     try:
+        if not kiosk_is_enabled():
+            # Pausado desde el panel: garantiza que ningún Chrome de nuestro
+            # perfil quede vivo (cubre el caso de que el usuario lo haya
+            # relanzado a mano o un tick anterior haya escapado al kill del endpoint).
+            if chrome.is_running():
+                chrome.kill_existing()
+            return
         chrome.ensure_running(settings.kiosk_url)
     except Exception:
         log.exception("Falló watchdog_job")

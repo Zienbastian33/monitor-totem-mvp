@@ -13,6 +13,7 @@ from .config import settings
 from .db import init_db, session_scope
 from .filters import register_filters
 from .jobs import build_scheduler
+from .kiosk_control import is_enabled as kiosk_is_enabled
 from .power import keep_awake
 from .routes import api as api_routes
 from .routes import panel
@@ -62,7 +63,10 @@ async def lifespan(app: FastAPI):
         log.info("Tótem local registrado: %s (%s)", totem.public_id, totem.name)
 
     chrome.kill_existing()
-    chrome.launch(settings.kiosk_url)
+    if kiosk_is_enabled():
+        chrome.launch(settings.kiosk_url)
+    else:
+        log.info("Kiosko pausado desde panel — Chrome no se lanza en el boot.")
 
     scheduler = build_scheduler()
     scheduler.start()

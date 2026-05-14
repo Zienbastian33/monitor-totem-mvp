@@ -9,6 +9,7 @@ from ..chrome_watchdog import chrome
 from ..config import settings
 from ..db import get_db
 from ..disk_usage import screenshots_disk_usage
+from ..kiosk_control import get_state as kiosk_get_state
 from ..models import Screenshot, Totem
 from ..ngrok_client import get_public_url
 
@@ -51,6 +52,7 @@ def index(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
             "cards": cards,
             "chrome_running": chrome.is_running(),
             "kiosk_url": settings.kiosk_url,
+            "kiosk_state": kiosk_get_state(),
             "ngrok_url": get_public_url(),
             "disk_bytes": disk_bytes,
             "disk_files": disk_files,
@@ -89,6 +91,7 @@ def totem_detail(public_id: str, request: Request, db: Session = Depends(get_db)
             "archive": archive,
             "chrome_running": chrome.is_running(),
             "kiosk_url": settings.kiosk_url,
+            "kiosk_state": kiosk_get_state(),
             "ngrok_url": get_public_url(),
         },
     )

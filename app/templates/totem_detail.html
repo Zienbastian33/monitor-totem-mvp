@@ -42,12 +42,39 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
       <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Chrome local</div>
       <div class="font-mono text-sm">
-        {% if chrome_running %}
+        {% if not kiosk_state.kiosk_enabled %}
+        <span class="text-yellow-700">● kiosko pausado</span>
+        {% elif chrome_running %}
         <span class="text-green-700">● corriendo</span>
         {% else %}
         <span class="text-red-700">● no detectado</span>
         {% endif %}
       </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">Modo kiosko</div>
+        <div class="font-mono text-[11px]">
+          {% if kiosk_state.kiosk_enabled %}
+          <span class="text-green-700">● activo</span>
+          {% else %}
+          <span class="text-yellow-700">● pausado</span>
+          {% endif %}
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mb-3 leading-relaxed">
+        {% if kiosk_state.kiosk_enabled %}
+        Chrome se relanza automáticamente si se cierra.
+        {% else %}
+        Chrome no se relanzará hasta reanudar.
+        {% endif %}
+      </p>
+      <button type="button" id="kiosk-toggle"
+        data-action="{{ 'pause' if kiosk_state.kiosk_enabled else 'resume' }}"
+        class="w-full text-xs font-medium px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        {% if kiosk_state.kiosk_enabled %}Pausar kiosko{% else %}Reanudar kiosko{% endif %}
+      </button>
+      <div id="kiosk-toggle-error" class="hidden text-[11px] text-red-600 mt-2 font-mono"></div>
     </div>
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
       <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-3">Hostname</div>
@@ -89,6 +116,35 @@
   </div>
 </section>
 {% endif %}
+
+<script>
+(function () {
+  const btn = document.getElementById('kiosk-toggle');
+  if (!btn) return;
+  const err = document.getElementById('kiosk-toggle-error');
+  btn.addEventListener('click', async () => {
+    const action = btn.dataset.action;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = action === 'pause' ? 'Pausando…' : 'Reanudando…';
+    err.classList.add('hidden');
+    try {
+      const resp = await fetch('/api/kiosk/' + action, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      window.location.reload();
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      err.textContent = 'Falló: ' + e.message;
+      err.classList.remove('hidden');
+    }
+  });
+})();
+</script>
 
 {% if archive %}
 <section>
